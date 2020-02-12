@@ -21,7 +21,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="TimeSpanProperty">
-          <Value>PT12M</Value>
+          <Value>PT20S</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="BehaviorSubject">
@@ -212,7 +212,66 @@ def process(value):
         <Name>ContextTwoImage</Name>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
-        <Name>ControlAudio</Name>
+        <Name>ControlContext</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>TimeSinseStart</Name>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>TotalSeconds</Selector>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>TotalTime</Name>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>TotalSeconds</Selector>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>NumBlocks</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:CombineLatest" />
+            </Expression>
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>@returns(str)
+def process(value):
+  total_time, curr_time, num_blocks = value
+  if curr_time &lt; 0.001 or curr_time is None:
+    return ""
+  interval = float(total_time) / float(num_blocks)
+  change_times = [interval * i for i in range(num_blocks)]
+
+  for i in change_times[::2]:
+    lower = i
+    upper = change_times[change_times.index(i) + 1]
+    if curr_time &gt;= lower and curr_time &lt; upper:
+      return "context_one"
+  else:
+    return "context_two"</scr:Script>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:DistinctUntilChanged" />
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="1" Label="Source1" />
+            <Edge From="1" To="5" Label="Source2" />
+            <Edge From="2" To="3" Label="Source1" />
+            <Edge From="3" To="5" Label="Source1" />
+            <Edge From="4" To="5" Label="Source3" />
+            <Edge From="5" To="6" Label="Source1" />
+            <Edge From="6" To="7" Label="Source1" />
+            <Edge From="7" To="8" Label="Source1" />
+          </Edges>
+        </Workflow>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>WhichContext</Name>
+      </Expression>
+      <Expression xsi:type="NestedWorkflow">
+        <Name>ControlIsContextOne</Name>
         <Description>Generates a boolean sequence denoting start and stop points for audio playback</Description>
         <Workflow>
           <Nodes>
@@ -234,15 +293,56 @@ def process(value):
             </Expression>
             <Expression xsi:type="LessThanOrEqual">
               <Operand xsi:type="TimeSpanProperty">
-                <Value>PT12M</Value>
+                <Value>PT20S</Value>
               </Operand>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:Zip" />
             </Expression>
             <Expression xsi:type="LogicalAnd" />
+            <Expression xsi:type="SubscribeSubject">
+              <Name>WhichContext</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:CombineLatest" />
+            </Expression>
+            <Expression xsi:type="Condition">
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Item1</Selector>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:DistinctUntilChanged" />
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Item2</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="StringProperty">
+                <Value>context_one</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="PropertyMapping">
+              <PropertyMappings>
+                <Property Name="Value" />
+              </PropertyMappings>
+            </Expression>
+            <Expression xsi:type="Equal">
+              <Operand xsi:type="StringProperty">
+                <Value>context_one</Value>
+              </Operand>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
@@ -254,13 +354,119 @@ def process(value):
             <Edge From="3" To="4" Label="Source2" />
             <Edge From="4" To="5" Label="Source2" />
             <Edge From="5" To="6" Label="Source1" />
-            <Edge From="6" To="7" Label="Source1" />
-            <Edge From="7" To="8" Label="Source1" />
+            <Edge From="6" To="8" Label="Source1" />
+            <Edge From="7" To="8" Label="Source2" />
+            <Edge From="8" To="9" Label="Source1" />
+            <Edge From="9" To="10" Label="Source1" />
+            <Edge From="10" To="11" Label="Source1" />
+            <Edge From="11" To="14" Label="Source1" />
+            <Edge From="12" To="13" Label="Source1" />
+            <Edge From="13" To="14" Label="Source2" />
+            <Edge From="14" To="15" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
       <Expression xsi:type="BehaviorSubject">
-        <Name>ContextTwoAudioOn</Name>
+        <Name>IsContextOne</Name>
+      </Expression>
+      <Expression xsi:type="NestedWorkflow">
+        <Name>ControlIsContextTwo</Name>
+        <Description>Generates a boolean sequence denoting start and stop points for audio playback</Description>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>TimeSinseStart</Name>
+            </Expression>
+            <Expression xsi:type="GreaterThanOrEqual">
+              <Operand xsi:type="TimeSpanProperty">
+                <Value>PT0S</Value>
+              </Operand>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>TotalTime</Name>
+            </Expression>
+            <Expression xsi:type="PropertyMapping">
+              <PropertyMappings>
+                <Property Name="Value" />
+              </PropertyMappings>
+            </Expression>
+            <Expression xsi:type="LessThanOrEqual">
+              <Operand xsi:type="TimeSpanProperty">
+                <Value>PT20S</Value>
+              </Operand>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Zip" />
+            </Expression>
+            <Expression xsi:type="LogicalAnd" />
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="StringProperty">
+                <Value>context_two</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="PropertyMapping">
+              <PropertyMappings>
+                <Property Name="Value" />
+              </PropertyMappings>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>WhichContext</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:CombineLatest" />
+            </Expression>
+            <Expression xsi:type="Condition">
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Item1</Selector>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:DistinctUntilChanged" />
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Item2</Selector>
+            </Expression>
+            <Expression xsi:type="Equal">
+              <Operand xsi:type="StringProperty">
+                <Value>context_two</Value>
+              </Operand>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="1" Label="Source1" />
+            <Edge From="0" To="4" Label="Source1" />
+            <Edge From="1" To="5" Label="Source1" />
+            <Edge From="2" To="3" Label="Source1" />
+            <Edge From="3" To="4" Label="Source2" />
+            <Edge From="4" To="5" Label="Source2" />
+            <Edge From="5" To="6" Label="Source1" />
+            <Edge From="6" To="10" Label="Source1" />
+            <Edge From="7" To="8" Label="Source1" />
+            <Edge From="8" To="14" Label="Source2" />
+            <Edge From="9" To="10" Label="Source2" />
+            <Edge From="10" To="11" Label="Source1" />
+            <Edge From="11" To="12" Label="Source1" />
+            <Edge From="12" To="13" Label="Source1" />
+            <Edge From="13" To="14" Label="Source1" />
+            <Edge From="14" To="15" Label="Source1" />
+          </Edges>
+        </Workflow>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>IsContextTwo</Name>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
         <Name>ControlVideo</Name>
@@ -280,7 +486,7 @@ def process(value):
             </Expression>
             <Expression xsi:type="LessThanOrEqual">
               <Operand xsi:type="TimeSpanProperty">
-                <Value>PT12M</Value>
+                <Value>PT20S</Value>
               </Operand>
             </Expression>
             <Expression xsi:type="GreaterThanOrEqual">
@@ -335,7 +541,7 @@ def process(value):
             </Expression>
             <Expression xsi:type="LessThanOrEqual">
               <Operand xsi:type="TimeSpanProperty">
-                <Value>PT12M</Value>
+                <Value>PT20S</Value>
               </Operand>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -364,66 +570,186 @@ def process(value):
         <Name>MiniscopeOn</Name>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
-        <Name>ControlImages</Name>
+        <Name>ControlAudio</Name>
         <Description>Generates a boolean sequence denoting start and stop points for picture presentations</Description>
         <Workflow>
           <Nodes>
+            <Expression xsi:type="NestedWorkflow">
+              <Name>ExperimentOn</Name>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>TimeSinseStart</Name>
+                  </Expression>
+                  <Expression xsi:type="GreaterThanOrEqual">
+                    <Operand xsi:type="TimeSpanProperty">
+                      <Value>PT0S</Value>
+                    </Operand>
+                  </Expression>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>TotalTime</Name>
+                  </Expression>
+                  <Expression xsi:type="PropertyMapping">
+                    <PropertyMappings>
+                      <Property Name="Value" />
+                    </PropertyMappings>
+                  </Expression>
+                  <Expression xsi:type="LessThanOrEqual">
+                    <Operand xsi:type="TimeSpanProperty">
+                      <Value>PT20S</Value>
+                    </Operand>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Zip" />
+                  </Expression>
+                  <Expression xsi:type="LogicalAnd" />
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="0" To="4" Label="Source1" />
+                  <Edge From="1" To="5" Label="Source1" />
+                  <Edge From="2" To="3" Label="Source1" />
+                  <Edge From="3" To="4" Label="Source2" />
+                  <Edge From="4" To="5" Label="Source2" />
+                  <Edge From="5" To="6" Label="Source1" />
+                  <Edge From="6" To="7" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
             <Expression xsi:type="SubscribeSubject">
-              <Name>TimeSinseStart</Name>
-            </Expression>
-            <Expression xsi:type="GreaterThanOrEqual">
-              <Operand xsi:type="TimeSpanProperty">
-                <Value>PT0S</Value>
-              </Operand>
+              <Name>IsContextOne</Name>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
-              <Name>TotalTime</Name>
-            </Expression>
-            <Expression xsi:type="PropertyMapping">
-              <PropertyMappings>
-                <Property Name="Value" />
-              </PropertyMappings>
-            </Expression>
-            <Expression xsi:type="LessThanOrEqual">
-              <Operand xsi:type="TimeSpanProperty">
-                <Value>PT12M</Value>
-              </Operand>
+              <Name>IsContextTwo</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="rx:Zip" />
+              <Combinator xsi:type="rx:CombineLatest" />
             </Expression>
-            <Expression xsi:type="LogicalAnd" />
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>@returns(str)
+def process(value):
+  exp_on, is_c1, is_c2 = value
+  
+  if not exp_on:
+    return "default"
+  if is_c1:
+    return "context_one"
+  if is_c2:
+    return "context_two"</scr:Script>
+            </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:DistinctUntilChanged" />
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
           <Edges>
-            <Edge From="0" To="1" Label="Source1" />
-            <Edge From="0" To="4" Label="Source1" />
-            <Edge From="1" To="5" Label="Source1" />
-            <Edge From="2" To="3" Label="Source1" />
-            <Edge From="3" To="4" Label="Source2" />
-            <Edge From="4" To="5" Label="Source2" />
+            <Edge From="0" To="3" Label="Source1" />
+            <Edge From="1" To="3" Label="Source2" />
+            <Edge From="2" To="3" Label="Source3" />
+            <Edge From="3" To="4" Label="Source1" />
+            <Edge From="4" To="5" Label="Source1" />
             <Edge From="5" To="6" Label="Source1" />
-            <Edge From="6" To="7" Label="Source1" />
-            <Edge From="7" To="8" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
       <Expression xsi:type="BehaviorSubject">
-        <Name>PicturePresentationTimes</Name>
+        <Name>WhichTone</Name>
+      </Expression>
+      <Expression xsi:type="NestedWorkflow">
+        <Name>ControlImages</Name>
+        <Description>Generates a boolean sequence denoting start and stop points for picture presentations</Description>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="NestedWorkflow">
+              <Name>ExperimentOn</Name>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>TimeSinseStart</Name>
+                  </Expression>
+                  <Expression xsi:type="GreaterThanOrEqual">
+                    <Operand xsi:type="TimeSpanProperty">
+                      <Value>PT0S</Value>
+                    </Operand>
+                  </Expression>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>TotalTime</Name>
+                  </Expression>
+                  <Expression xsi:type="PropertyMapping">
+                    <PropertyMappings>
+                      <Property Name="Value" />
+                    </PropertyMappings>
+                  </Expression>
+                  <Expression xsi:type="LessThanOrEqual">
+                    <Operand xsi:type="TimeSpanProperty">
+                      <Value>PT20S</Value>
+                    </Operand>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Zip" />
+                  </Expression>
+                  <Expression xsi:type="LogicalAnd" />
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="0" To="4" Label="Source1" />
+                  <Edge From="1" To="5" Label="Source1" />
+                  <Edge From="2" To="3" Label="Source1" />
+                  <Edge From="3" To="4" Label="Source2" />
+                  <Edge From="4" To="5" Label="Source2" />
+                  <Edge From="5" To="6" Label="Source1" />
+                  <Edge From="6" To="7" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>IsContextOne</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>IsContextTwo</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:CombineLatest" />
+            </Expression>
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>@returns(str)
+def process(value):
+  exp_on, is_c1, is_c2 = value
+  
+  if not exp_on:
+    return "default"
+  if is_c1:
+    return "context_one"
+  if is_c2:
+    return "context_two"</scr:Script>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:DistinctUntilChanged" />
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="3" Label="Source1" />
+            <Edge From="1" To="3" Label="Source2" />
+            <Edge From="2" To="3" Label="Source3" />
+            <Edge From="3" To="4" Label="Source1" />
+            <Edge From="4" To="5" Label="Source1" />
+            <Edge From="5" To="6" Label="Source1" />
+          </Edges>
+        </Workflow>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>WhichImage</Name>
       </Expression>
       <Expression xsi:type="Disable">
         <Builder xsi:type="NestedWorkflow">
-          <Name>PlayAudio</Name>
+          <Name>PlayAudioOld</Name>
           <Workflow>
             <Nodes>
               <Expression xsi:type="SubscribeSubject">
                 <Name>AudioOn</Name>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>Tone10Hz</Name>
               </Expression>
               <Expression xsi:type="Combinator">
                 <Combinator xsi:type="rx:CombineLatest" />
@@ -456,146 +782,149 @@ def process(value):
                 </Combinator>
               </Expression>
               <Expression xsi:type="WorkflowOutput" />
+              <Expression xsi:type="SubscribeSubject">
+                <Name>WhichTone</Name>
+              </Expression>
+              <Expression xsi:type="SubscribeSubject">
+                <Name>ContextOneTone</Name>
+              </Expression>
             </Nodes>
             <Edges>
-              <Edge From="0" To="2" Label="Source2" />
+              <Edge From="0" To="1" Label="Source1" />
               <Edge From="1" To="2" Label="Source1" />
               <Edge From="2" To="3" Label="Source1" />
               <Edge From="3" To="4" Label="Source1" />
               <Edge From="4" To="5" Label="Source1" />
-              <Edge From="5" To="6" Label="Source1" />
             </Edges>
           </Workflow>
         </Builder>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="NestedWorkflow">
-          <Name>PresentImages</Name>
-          <Workflow>
-            <Nodes>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>PicturePresentationTimes</Name>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>ContextOneImage</Name>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>DefaultImage</Name>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>ContextTwoImage</Name>
-              </Expression>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="rx:CombineLatest" />
-              </Expression>
-              <Expression xsi:type="scr:PythonTransform">
-                <scr:Script>import clr
+      <Expression xsi:type="NestedWorkflow">
+        <Name>PresentImages</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>ContextOneImage</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>DefaultImage</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>ContextTwoImage</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>WhichImage</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:CombineLatest" />
+            </Expression>
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>import clr
 clr.AddReference("OpenCV.Net")
 from OpenCV.Net import *
 
 
 @returns(IplImage)
 def process(value):
-  present_now, default, experimental = value
-  
-  if present_now:
-    return experimental
-  else:
-    return default</scr:Script>
-              </Expression>
-              <Expression xsi:type="WorkflowOutput" />
-            </Nodes>
-            <Edges>
-              <Edge From="0" To="4" Label="Source1" />
-              <Edge From="1" To="4" Label="Source3" />
-              <Edge From="2" To="4" Label="Source2" />
-              <Edge From="3" To="4" Label="Source4" />
-              <Edge From="4" To="5" Label="Source1" />
-              <Edge From="5" To="6" Label="Source1" />
-            </Edges>
-          </Workflow>
-        </Builder>
+  image_to_present, default, c1, c2 = value
+
+  if image_to_present == "default":
+    return default
+  if image_to_present == "context_one":
+    return c1
+  if image_to_present == "context_two":
+    return c2</scr:Script>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="4" Label="Source3" />
+            <Edge From="1" To="4" Label="Source2" />
+            <Edge From="2" To="4" Label="Source4" />
+            <Edge From="3" To="4" Label="Source1" />
+            <Edge From="4" To="5" Label="Source1" />
+            <Edge From="5" To="6" Label="Source1" />
+          </Edges>
+        </Workflow>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="NestedWorkflow">
-          <Name>RecordVideo</Name>
-          <Workflow>
-            <Nodes>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="cv:CameraCapture">
-                  <cv:Index>0</cv:Index>
-                  <cv:CaptureProperties />
-                </Combinator>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>VideoStartTime</Name>
-              </Expression>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="rx:CombineLatest" />
-              </Expression>
-              <Expression xsi:type="Condition">
-                <Workflow>
-                  <Nodes>
-                    <Expression xsi:type="WorkflowInput">
-                      <Name>Source1</Name>
-                    </Expression>
-                    <Expression xsi:type="MemberSelector">
-                      <Selector>Item2</Selector>
-                    </Expression>
-                    <Expression xsi:type="WorkflowOutput" />
-                  </Nodes>
-                  <Edges>
-                    <Edge From="0" To="1" Label="Source1" />
-                    <Edge From="1" To="2" Label="Source1" />
-                  </Edges>
-                </Workflow>
-              </Expression>
-              <Expression xsi:type="MemberSelector">
-                <Selector>Item1</Selector>
-              </Expression>
-              <Expression xsi:type="MemberSelector">
-                <Selector>IsInvalid</Selector>
-              </Expression>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="rx:Timestamp" />
-              </Expression>
-              <Expression xsi:type="io:CsvWriter">
-                <io:FileName>C:\Users\rory\repos\bonsai_fear_conditioning\output\context_two_frame_timestamps.csv</io:FileName>
-                <io:Append>false</io:Append>
-                <io:Overwrite>true</io:Overwrite>
-                <io:Suffix>None</io:Suffix>
-                <io:IncludeHeader>false</io:IncludeHeader>
-              </Expression>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="cv:VideoWriter">
-                  <cv:FileName>C:\Users\rory\repos\bonsai_fear_conditioning\output\condition_two_video.avi</cv:FileName>
-                  <cv:Suffix>None</cv:Suffix>
-                  <cv:Buffered>true</cv:Buffered>
-                  <cv:Overwrite>true</cv:Overwrite>
-                  <cv:FourCC>FMP4</cv:FourCC>
-                  <cv:FrameRate>30</cv:FrameRate>
-                  <cv:FrameSize>
-                    <cv:Width>0</cv:Width>
-                    <cv:Height>0</cv:Height>
-                  </cv:FrameSize>
-                  <cv:ResizeInterpolation>NearestNeighbor</cv:ResizeInterpolation>
-                </Combinator>
-              </Expression>
-              <Expression xsi:type="WorkflowOutput" />
-            </Nodes>
-            <Edges>
-              <Edge From="0" To="2" Label="Source1" />
-              <Edge From="1" To="2" Label="Source2" />
-              <Edge From="2" To="3" Label="Source1" />
-              <Edge From="3" To="4" Label="Source1" />
-              <Edge From="4" To="5" Label="Source1" />
-              <Edge From="4" To="8" Label="Source1" />
-              <Edge From="5" To="6" Label="Source1" />
-              <Edge From="6" To="7" Label="Source1" />
-              <Edge From="8" To="9" Label="Source1" />
-            </Edges>
-          </Workflow>
-        </Builder>
+      <Expression xsi:type="NestedWorkflow">
+        <Name>RecordVideo</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="cv:CameraCapture">
+                <cv:Index>0</cv:Index>
+                <cv:CaptureProperties />
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>VideoStartTime</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:CombineLatest" />
+            </Expression>
+            <Expression xsi:type="Condition">
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Item2</Selector>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Item1</Selector>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>IsInvalid</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timestamp" />
+            </Expression>
+            <Expression xsi:type="io:CsvWriter">
+              <io:FileName>C:\Users\rory\repos\bonsai_fear_conditioning\output\context_switch_one_frame_timestamps.csv</io:FileName>
+              <io:Append>false</io:Append>
+              <io:Overwrite>true</io:Overwrite>
+              <io:Suffix>None</io:Suffix>
+              <io:IncludeHeader>false</io:IncludeHeader>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="cv:VideoWriter">
+                <cv:FileName>C:\Users\rory\repos\bonsai_fear_conditioning\output\context_switch_one.avi</cv:FileName>
+                <cv:Suffix>None</cv:Suffix>
+                <cv:Buffered>true</cv:Buffered>
+                <cv:Overwrite>true</cv:Overwrite>
+                <cv:FourCC>FMP4</cv:FourCC>
+                <cv:FrameRate>30</cv:FrameRate>
+                <cv:FrameSize>
+                  <cv:Width>0</cv:Width>
+                  <cv:Height>0</cv:Height>
+                </cv:FrameSize>
+                <cv:ResizeInterpolation>NearestNeighbor</cv:ResizeInterpolation>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="2" Label="Source1" />
+            <Edge From="1" To="2" Label="Source2" />
+            <Edge From="2" To="3" Label="Source1" />
+            <Edge From="3" To="4" Label="Source1" />
+            <Edge From="4" To="5" Label="Source1" />
+            <Edge From="4" To="8" Label="Source1" />
+            <Edge From="5" To="6" Label="Source1" />
+            <Edge From="6" To="7" Label="Source1" />
+            <Edge From="8" To="9" Label="Source1" />
+          </Edges>
+        </Workflow>
       </Expression>
       <Expression xsi:type="Disable">
         <Builder xsi:type="NestedWorkflow">
@@ -1423,36 +1752,118 @@ def process(value):
         </Builder>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
-        <Name>ControlContext</Name>
+        <Name>PlayAudio</Name>
         <Workflow>
           <Nodes>
             <Expression xsi:type="SubscribeSubject">
-              <Name>TimeSinseStart</Name>
-            </Expression>
-            <Expression xsi:type="MemberSelector">
-              <Selector>TotalSeconds</Selector>
+              <Name>ContextOneTone</Name>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
-              <Name>TotalTime</Name>
-            </Expression>
-            <Expression xsi:type="MemberSelector">
-              <Selector>TotalSeconds</Selector>
+              <Name>WhichTone</Name>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:CombineLatest" />
             </Expression>
-            <Expression xsi:type="scr:PythonTransform">
-              <scr:Script>@returns(bool)
+            <Expression xsi:type="Condition">
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Item1</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:DistinctUntilChanged" />
+                  </Expression>
+                  <Expression xsi:type="scr:PythonTransform">
+                    <scr:Script>@returns(bool)
 def process(value):
-  return True</scr:Script>
+  return value == "context_one"</scr:Script>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                  <Edge From="2" To="3" Label="Source1" />
+                  <Edge From="3" To="4" Label="Source1" />
+                </Edges>
+              </Workflow>
             </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Item2</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="al:AudioPlayback">
+                <al:SourceName />
+                <al:SampleRate>44100</al:SampleRate>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>WhichTone</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>ContextTwoTone</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:CombineLatest" />
+            </Expression>
+            <Expression xsi:type="Condition">
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Item1</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:DistinctUntilChanged" />
+                  </Expression>
+                  <Expression xsi:type="scr:PythonTransform">
+                    <scr:Script>@returns(bool)
+def process(value):
+  return value == "context_two"</scr:Script>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                  <Edge From="2" To="3" Label="Source1" />
+                  <Edge From="3" To="4" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Item2</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="al:AudioPlayback">
+                <al:SourceName />
+                <al:SampleRate>44100</al:SampleRate>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:CombineLatest" />
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
           </Nodes>
           <Edges>
-            <Edge From="0" To="1" Label="Source1" />
-            <Edge From="1" To="4" Label="Source2" />
+            <Edge From="0" To="2" Label="Source2" />
+            <Edge From="1" To="2" Label="Source1" />
             <Edge From="2" To="3" Label="Source1" />
             <Edge From="3" To="4" Label="Source1" />
             <Edge From="4" To="5" Label="Source1" />
+            <Edge From="5" To="12" Label="Source2" />
+            <Edge From="6" To="8" Label="Source1" />
+            <Edge From="7" To="8" Label="Source2" />
+            <Edge From="8" To="9" Label="Source1" />
+            <Edge From="9" To="10" Label="Source1" />
+            <Edge From="10" To="11" Label="Source1" />
+            <Edge From="11" To="12" Label="Source1" />
+            <Edge From="12" To="13" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
@@ -1472,6 +1883,9 @@ def process(value):
       <Edge From="22" To="23" Label="Source1" />
       <Edge From="24" To="25" Label="Source1" />
       <Edge From="26" To="27" Label="Source1" />
+      <Edge From="28" To="29" Label="Source1" />
+      <Edge From="30" To="31" Label="Source1" />
+      <Edge From="32" To="33" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>
