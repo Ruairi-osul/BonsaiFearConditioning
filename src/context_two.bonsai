@@ -223,7 +223,7 @@ def process(value):
             </Expression>
             <Expression xsi:type="LessThanOrEqual">
               <Operand xsi:type="TimeSpanProperty">
-                <Value>PT10S</Value>
+                <Value>PT12M</Value>
               </Operand>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -269,7 +269,7 @@ def process(value):
             </Expression>
             <Expression xsi:type="LessThanOrEqual">
               <Operand xsi:type="TimeSpanProperty">
-                <Value>PT10S</Value>
+                <Value>PT12M</Value>
               </Operand>
             </Expression>
             <Expression xsi:type="GreaterThanOrEqual">
@@ -324,7 +324,7 @@ def process(value):
             </Expression>
             <Expression xsi:type="LessThanOrEqual">
               <Operand xsi:type="TimeSpanProperty">
-                <Value>PT10S</Value>
+                <Value>PT12M</Value>
               </Operand>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -437,7 +437,7 @@ def process(value):
             </Expression>
             <Expression xsi:type="LessThanOrEqual">
               <Operand xsi:type="TimeSpanProperty">
-                <Value>PT10S</Value>
+                <Value>PT12M</Value>
               </Operand>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -1400,6 +1400,40 @@ def process(value):
             <Nodes>
               <Expression xsi:type="SubscribeSubject">
                 <Name>MiniscopeOn</Name>
+              </Expression>
+              <Expression xsi:type="Condition">
+                <Workflow>
+                  <Nodes>
+                    <Expression xsi:type="WorkflowInput">
+                      <Name>Source1</Name>
+                    </Expression>
+                    <Expression xsi:type="WorkflowOutput" />
+                  </Nodes>
+                  <Edges>
+                    <Edge From="0" To="1" Label="Source1" />
+                  </Edges>
+                </Workflow>
+              </Expression>
+              <Expression xsi:type="Combinator">
+                <Combinator xsi:type="p1:TriggerOutput">
+                  <p1:Channels>0</p1:Channels>
+                </Combinator>
+              </Expression>
+            </Nodes>
+            <Edges>
+              <Edge From="0" To="1" Label="Source1" />
+              <Edge From="1" To="2" Label="Source1" />
+            </Edges>
+          </Workflow>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="NestedWorkflow">
+          <Name>TriggerShockGrid</Name>
+          <Workflow>
+            <Nodes>
+              <Expression xsi:type="SubscribeSubject">
+                <Name>GridOn</Name>
               </Expression>
               <Expression xsi:type="Condition">
                 <Workflow>
