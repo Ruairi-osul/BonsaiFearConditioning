@@ -174,7 +174,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="al:AudioReader">
-          <al:FileName>C:\Users\rory\repos\bonsai_fear_conditioning\static\whitenoise.wav</al:FileName>
+          <al:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\static\tone_10hz.wav</al:FileName>
           <al:BufferLength>10</al:BufferLength>
         </Combinator>
       </Expression>
@@ -184,7 +184,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:LoadImage">
-          <cv:FileName>C:\Users\rory\repos\bonsai_fear_conditioning\static\images\plain-white-background.jpg</cv:FileName>
+          <cv:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\static\images\plain-white-background.jpg</cv:FileName>
           <cv:Mode>Unchanged</cv:Mode>
         </Combinator>
       </Expression>
@@ -193,7 +193,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:LoadImage">
-          <cv:FileName>C:\Users\rory\repos\bonsai_fear_conditioning\static\images\grey.jpg</cv:FileName>
+          <cv:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\static\images\rainbow.jpg</cv:FileName>
           <cv:Mode>Unchanged</cv:Mode>
         </Combinator>
       </Expression>
@@ -560,12 +560,12 @@ def process(value):
         </Workflow>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
-        <Name>RecordVideo</Name>
+        <Name> </Name>
         <Workflow>
           <Nodes>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="cv:CameraCapture">
-                <cv:Index>0</cv:Index>
+                <cv:Index>1</cv:Index>
                 <cv:CaptureProperties />
               </Combinator>
             </Expression>
@@ -602,7 +602,7 @@ def process(value):
               <Combinator xsi:type="rx:Timestamp" />
             </Expression>
             <Expression xsi:type="io:CsvWriter">
-              <io:FileName>C:\Users\rory\repos\bonsai_fear_conditioning\output\context_two_frame_timestamps.csv</io:FileName>
+              <io:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\output\context_two_frame_timestamps.csv</io:FileName>
               <io:Append>false</io:Append>
               <io:Overwrite>true</io:Overwrite>
               <io:Suffix>None</io:Suffix>
@@ -610,7 +610,7 @@ def process(value):
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="cv:VideoWriter">
-                <cv:FileName>C:\Users\rory\repos\bonsai_fear_conditioning\output\condition_two_video.avi</cv:FileName>
+                <cv:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\output\condition_two_video.avi</cv:FileName>
                 <cv:Suffix>None</cv:Suffix>
                 <cv:Buffered>true</cv:Buffered>
                 <cv:Overwrite>true</cv:Overwrite>
@@ -1345,7 +1345,7 @@ def process(value):
               <Combinator xsi:type="rx:Merge" />
             </Expression>
             <Expression xsi:type="io:CsvWriter">
-              <io:FileName>C:\Users\rory\repos\bonsai_fear_conditioning\output\condition_two_events.csv</io:FileName>
+              <io:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\output\condition_two_events.csv</io:FileName>
               <io:Append>false</io:Append>
               <io:Overwrite>true</io:Overwrite>
               <io:Suffix>None</io:Suffix>

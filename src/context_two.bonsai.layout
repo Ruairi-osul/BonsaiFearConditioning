@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<VisualizerLayout xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<VisualizerLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                  >
   <DialogSettings>
     <Visible>false</Visible>
@@ -355,7 +355,7 @@
         <XMin>0</XMin>
         <XMax>441</XMax>
         <YMin>-30000</YMin>
-        <YMax>29999.999999999996</YMax>
+        <YMax>30000</YMax>
         <AutoScaleX>true</AutoScaleX>
         <AutoScaleY>true</AutoScaleY>
         <SelectedPage>0</SelectedPage>
@@ -380,7 +380,7 @@
     </EditorDialogSettings>
   </DialogSettings>
   <DialogSettings xsi:type="WorkflowEditorSettings">
-    <Visible>true</Visible>
+    <Visible>false</Visible>
     <Location>
       <X>410</X>
       <Y>14</Y>
@@ -408,14 +408,14 @@
     </EditorDialogSettings>
   </DialogSettings>
   <DialogSettings xsi:type="WorkflowEditorSettings">
-    <Visible>true</Visible>
+    <Visible>false</Visible>
     <Location>
-      <X>1328</X>
-      <Y>677</Y>
+      <X>24</X>
+      <Y>26</Y>
     </Location>
     <Size>
-      <Width>477</Width>
-      <Height>315</Height>
+      <Width>334</Width>
+      <Height>278</Height>
     </Size>
     <WindowState>Normal</WindowState>
     <VisualizerTypeName>Bonsai.Vision.Design.IplImageVisualizer</VisualizerTypeName>
@@ -425,17 +425,17 @@
     <EditorDialogSettings>
       <Visible>false</Visible>
       <Location>
-        <X>5</X>
-        <Y>583</Y>
+        <X>24</X>
+        <Y>26</Y>
       </Location>
       <Size>
-        <Width>452</Width>
-        <Height>341</Height>
+        <Width>724</Width>
+        <Height>238</Height>
       </Size>
       <WindowState>Normal</WindowState>
     </EditorDialogSettings>
   </DialogSettings>
-  <DialogSettings>
+  <DialogSettings xsi:type="WorkflowEditorSettings">
     <Visible>false</Visible>
     <Location>
       <X>0</X>
@@ -446,6 +446,18 @@
       <Height>0</Height>
     </Size>
     <WindowState>Normal</WindowState>
+    <EditorDialogSettings>
+      <Visible>false</Visible>
+      <Location>
+        <X>96</X>
+        <Y>104</Y>
+      </Location>
+      <Size>
+        <Width>710</Width>
+        <Height>409</Height>
+      </Size>
+      <WindowState>Normal</WindowState>
+    </EditorDialogSettings>
   </DialogSettings>
   <DialogSettings>
     <Visible>false</Visible>
