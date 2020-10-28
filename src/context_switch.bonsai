@@ -166,7 +166,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="al:AudioReader">
-          <al:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\static\tone_10hz.wav</al:FileName>
+          <al:FileName>C:\Users\rory\repos\BonsaiFearConditioning\static\tone_10hz.wav</al:FileName>
           <al:BufferLength>10</al:BufferLength>
         </Combinator>
       </Expression>
@@ -176,7 +176,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="al:AudioReader">
-          <al:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\static\whitenoise.wav</al:FileName>
+          <al:FileName>C:\Users\rory\repos\BonsaiFearConditioning\static\whitenoise.wav</al:FileName>
           <al:BufferLength>10</al:BufferLength>
         </Combinator>
       </Expression>
@@ -186,7 +186,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:LoadImage">
-          <cv:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\static\images\plain-white-background.jpg</cv:FileName>
+          <cv:FileName>C:\Users\rory\repos\BonsaiFearConditioning\static\images\plain-white-background.jpg</cv:FileName>
           <cv:Mode>Unchanged</cv:Mode>
         </Combinator>
       </Expression>
@@ -195,7 +195,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:LoadImage">
-          <cv:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\static\images\rainbow.jpg</cv:FileName>
+          <cv:FileName>C:\Users\rory\repos\BonsaiFearConditioning\static\images\rainbow.jpg</cv:FileName>
           <cv:Mode>Unchanged</cv:Mode>
         </Combinator>
       </Expression>
@@ -204,7 +204,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:LoadImage">
-          <cv:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\static\images\grey.jpg</cv:FileName>
+          <cv:FileName>C:\Users\rory\repos\BonsaiFearConditioning\static\images\grey.jpg</cv:FileName>
           <cv:Mode>Unchanged</cv:Mode>
         </Combinator>
       </Expression>
@@ -548,9 +548,6 @@ def process(value):
               <Combinator xsi:type="rx:Zip" />
             </Expression>
             <Expression xsi:type="LogicalAnd" />
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="rx:DistinctUntilChanged" />
-            </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
           <Edges>
@@ -562,7 +559,6 @@ def process(value):
             <Edge From="4" To="5" Label="Source2" />
             <Edge From="5" To="6" Label="Source1" />
             <Edge From="6" To="7" Label="Source1" />
-            <Edge From="7" To="8" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
@@ -834,7 +830,7 @@ def process(value):
               <Combinator xsi:type="rx:Timestamp" />
             </Expression>
             <Expression xsi:type="io:CsvWriter">
-              <io:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\output\context_switch_one_frame_timestamps.csv</io:FileName>
+              <io:FileName>C:\Users\rory\repos\BonsaiFearConditioning\output\context_switch_one_frame_timestamps.csv</io:FileName>
               <io:Append>false</io:Append>
               <io:Overwrite>true</io:Overwrite>
               <io:Suffix>None</io:Suffix>
@@ -842,7 +838,7 @@ def process(value):
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="cv:VideoWriter">
-                <cv:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\output\context_switch_one.avi</cv:FileName>
+                <cv:FileName>C:\Users\rory\repos\BonsaiFearConditioning\output\context_switch_one</cv:FileName>
                 <cv:Suffix>None</cv:Suffix>
                 <cv:Buffered>true</cv:Buffered>
                 <cv:Overwrite>true</cv:Overwrite>
@@ -1463,7 +1459,7 @@ def process(value):
               <Combinator xsi:type="rx:Merge" />
             </Expression>
             <Expression xsi:type="io:CsvWriter">
-              <io:FileName>C:\Users\Rory\repos\BonsaiFearConditioning\output\context_switch_one_events.csv</io:FileName>
+              <io:FileName>C:\Users\rory\repos\BonsaiFearConditioning\output\context_switch_one_events.csv</io:FileName>
               <io:Append>false</io:Append>
               <io:Overwrite>true</io:Overwrite>
               <io:Suffix>None</io:Suffix>
@@ -1506,40 +1502,38 @@ def process(value):
           </Edges>
         </Workflow>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="NestedWorkflow">
-          <Name>TriggerMiniscopeToRecord</Name>
-          <Description>Sends a signal a pulse pal to send a 10v signal to an inscopix box</Description>
-          <Workflow>
-            <Nodes>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>MiniscopeOn</Name>
-              </Expression>
-              <Expression xsi:type="Condition">
-                <Workflow>
-                  <Nodes>
-                    <Expression xsi:type="WorkflowInput">
-                      <Name>Source1</Name>
-                    </Expression>
-                    <Expression xsi:type="WorkflowOutput" />
-                  </Nodes>
-                  <Edges>
-                    <Edge From="0" To="1" Label="Source1" />
-                  </Edges>
-                </Workflow>
-              </Expression>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="p1:TriggerOutput">
-                  <p1:Channels>0</p1:Channels>
-                </Combinator>
-              </Expression>
-            </Nodes>
-            <Edges>
-              <Edge From="0" To="1" Label="Source1" />
-              <Edge From="1" To="2" Label="Source1" />
-            </Edges>
-          </Workflow>
-        </Builder>
+      <Expression xsi:type="NestedWorkflow">
+        <Name />
+        <Description>Sends a signal a pulse pal to send a 10v signal to an inscopix box</Description>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>MiniscopeOn</Name>
+            </Expression>
+            <Expression xsi:type="Condition">
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="p1:TriggerOutput">
+                <p1:Channels>0</p1:Channels>
+              </Combinator>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="1" Label="Source1" />
+            <Edge From="1" To="2" Label="Source1" />
+          </Edges>
+        </Workflow>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
         <Name>PlayAudio</Name>
